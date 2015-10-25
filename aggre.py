@@ -38,6 +38,7 @@ class Aggregator():
 		dataDict = dict()
 		for uuid in self.uuidList:
 			if not uuid in self.doneList:
+				print fileIdx, uuidCnt, uuid
 				batchQ = dict()
 				sensorpoints = bdDS.list_sensorpoints(uuid, offset=0, limit=2)
 #				sensorpoints = sensorpoints['sensorpoints']
