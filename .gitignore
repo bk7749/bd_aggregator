@@ -1,0 +1,8 @@
+*
+!.gitignore
+!*.py
+!*.txt
+!metadata/dependency_map.json
+!*/
+
+authdata.py
