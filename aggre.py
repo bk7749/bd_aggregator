@@ -37,11 +37,12 @@ class Aggregator():
 			writer.writerow(uuidList)
 	def store_entire_data(self):
 		filename = 'data/rawdata_'
-		fileIdx = 0
+		fileIdx = 55
 		uuidCnt = 0
-		maxuuidNumInFile = 200
+		maxuuidNumInFile = 50
 		dataDict = dict()
-		for uuid in self.uuidList:
+		localUuidList = self.uuidList[5500:]
+		for uuid in localUuidList:
 			print fileIdx, uuidCnt, uuid
 			batchQ = dict()
 			sensorpoints = self.bdDS.list_sensorpoints(uuid, offset=0, limit=2)
@@ -61,3 +62,10 @@ class Aggregator():
 				dataDict = dict()
 				fileIdx += 1
 
+
+	def store_entire_tag(self):
+		tagDict = dict()
+		for uuid in self.uuidList:
+			tagDict[uuid] = self.bdDS.list_sensor_context(uuid)
+		with open('data/tags.json', 'wb') as fp:
+			json.dump(tagDict, fp)
