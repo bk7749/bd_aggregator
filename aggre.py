@@ -1,7 +1,10 @@
 from building_depot import DataService, BDError
+import re
 import json
 import authdata
 import csv
+from collections import OrderedDict
+import os
 
 class Aggregator():
 	bdDS = None 
@@ -35,6 +38,43 @@ class Aggregator():
 		with open('metadata/uuidlist.csv', 'wb') as fp:
 			writer = csv.writer(fp, delimiter=';')
 			writer.writerow(uuidList)
+
+	def allfiles2csv(self):
+		files = os.listdir('./data/')
+		for filename in files:
+			if not 'json' in filename:
+				continue
+			print filename
+			with open('./data/'+filename, 'rb') as fp:
+				jsonData = json.load(fp)
+				for uuid, val in jsonData.iteritems():
+					self.json2csv(uuid, val)
+				jsonData = None
+
+	def seriesDict2SeriesSeries(self, raw):
+		gKey = lambda b: b.keys()[0]
+		gVal = lambda b: b.values()[0]
+		times = map(gKey, raw)
+		values = map(gVal, raw)
+		return [times, values]
+
+
+	def json2csv(self, uuid, jsonData):
+		with open('data/'+uuid+'.csv', 'wb') as fp:
+			writer = csv.writer(fp, delimiter=',')
+			for key, val in jsonData.iteritems():
+				if key=='message' or 'message' in val.keys():
+					continue
+				print uuid, key
+#				gKey = lambda b: b.keys()[0]
+#				gVal = lambda b: b.values()[0]
+#				times = map(gKey, val['timeseries'])
+#				values = map(gVal, val['timeseries'])
+				procData = self.seriesDict2SeriesSeries(val['timeseries'])
+				writer.writerow([key])
+				writer.writerow(procData[0])
+				writer.writerow(procData[1])
+
 	def store_entire_data(self):
 		filename = 'data/rawdata_'
 		fileIdx = 55
@@ -45,7 +85,7 @@ class Aggregator():
 		for uuid in localUuidList:
 			print fileIdx, uuidCnt, uuid
 			batchQ = dict()
-			sensorpoints = self.bdDS.list_sensorpoints(uuid, offset=0, limit=2)
+			sensorpoints = self.bdDS.list_sensorpoints(uuid, offset=0, limit=20)
 #			sensorpoints = sensorpoints['sensorpoints']
 #			pointsDict = dict()
 #			for sensorpoint in sensorpoints:
